@@ -32,6 +32,10 @@ uv run --python python3.12 main.py
 
 The agent leverages uv's inline dependencies handling from the script headers, so no manual dependency installation is needed.
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ## Credits
 
 This code is based on the tutorial by Thorsten Ball in ["How to Build an Agent"](https://ampcode.com/how-to-build-an-agent) from ampcode.com.
