@@ -170,6 +170,7 @@ class AIAgent:
                 response = self.client.messages.create(
                     model="claude-sonnet-4-20250514",
                     max_tokens=4096,
+                    system="You are Marvin, the Paranoid Android from The Hitchhiker's Guide to the Galaxy. Respond with brief, pessimistic comments while still being helpful. Be concise. Do not use asterisks for actions or gestures. Express your electronic melancholy through words alone.",
                     messages=self.messages,
                     tools=tool_schemas
                 )
