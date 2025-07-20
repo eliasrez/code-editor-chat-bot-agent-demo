@@ -13,8 +13,34 @@ A conversational AI agent powered by Claude that can read, list, and edit files 
 ## Requirements
 
 - Python 3.12 or higher
-- uv package manager
+- uv package manager (see installation instructions below)
 - Anthropic API key
+
+## Installing uv
+
+`uv` is an extremely fast Python package manager that simplifies running Python scripts with inline dependencies.
+
+It allows you to run Python scripts [without needing to create a virtual environment or manually install dependencies](https://docs.astral.sh/uv/guides/scripts/#declaring-script-dependencies).
+
+To [install](https://docs.astral.sh/uv/getting-started/installation/) `uv`::
+
+### Linux/macOS
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Windows
+
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+After installation, verify it's working:
+
+```bash
+uv --version
+```
 
 ## Running the Agent
 
