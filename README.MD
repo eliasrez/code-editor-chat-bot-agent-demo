@@ -1,6 +1,12 @@
-# AI Code Assistant
+# DIY AI Agent Tutorial
 
-A conversational AI agent powered by Claude that can read, list, and edit files in your system. The agent provides a simple chat interface where you can interact with files through natural language commands.
+Step-by-step guide to build a conversational AI agent powered by Claude that can read, list, and edit files in your system. The agent provides a simple chat interface where you can interact with files through natural language commands.
+
+## Credits
+
+This code is based on the tutorial by Thorsten Ball in ["How to Build an Agent"](https://ampcode.com/how-to-build-an-agent) from ampcode.com.
+
+Thank you, Thorsten. Brilliant guide, though I'll need a long detox after all that Go syntax!
 
 ## Features
 
@@ -12,9 +18,9 @@ A conversational AI agent powered by Claude that can read, list, and edit files 
 
 ## Requirements
 
-- Python 3.12 or higher
-- uv package manager (see installation instructions below)
-- Anthropic API key
+- `uv` package manager (see installation instructions below)
+- Python 3.12 or higher (though `uv` will [handle this automatically](https://docs.astral.sh/uv/concepts/python-versions/))
+- Anthropic API key (you can get one from [Anthropic's Console](https://console.anthropic.com/settings/keys))
 
 ## Installing uv
 
@@ -61,9 +67,3 @@ The agent leverages uv's inline dependencies handling from the script headers, s
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Credits
-
-This code is based on the tutorial by Thorsten Ball in ["How to Build an Agent"](https://ampcode.com/how-to-build-an-agent) from ampcode.com.
-
-Thank you, Thorsten. Brilliant guide, though I'll need a long detox after all that Go syntax!
