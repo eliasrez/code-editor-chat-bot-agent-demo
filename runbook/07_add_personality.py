@@ -18,7 +18,7 @@ class Tool(BaseModel):
     name: str
     description: str
     input_schema: Dict[str, Any]
-    
+
 
 class AIAgent:
     def __init__(self, api_key: str):
@@ -26,7 +26,7 @@ class AIAgent:
         self.messages: List[Dict[str, Any]] = []
         self.tools: List[Tool] = []
         self._setup_tools()
-    
+
     def _setup_tools(self):
         self.tools = [
             Tool(
@@ -80,7 +80,7 @@ class AIAgent:
                 }
             )
         ]
-    
+
     def _execute_tool(self, tool_name: str, tool_input: Dict[str, Any]) -> str:
         try:
             if tool_name == "read_file":
@@ -97,7 +97,7 @@ class AIAgent:
                 return f"Unknown tool: {tool_name}"
         except Exception as e:
             return f"Error executing {tool_name}: {str(e)}"
-    
+
     def _read_file(self, path: str) -> str:
         try:
             with open(path, 'r', encoding='utf-8') as f:
@@ -107,12 +107,12 @@ class AIAgent:
             return f"File not found: {path}"
         except Exception as e:
             return f"Error reading file: {str(e)}"
-    
+
     def _list_files(self, path: str) -> str:
         try:
             if not os.path.exists(path):
                 return f"Path not found: {path}"
-            
+
             items = []
             for item in sorted(os.listdir(path)):
                 item_path = os.path.join(path, item)
@@ -120,42 +120,42 @@ class AIAgent:
                     items.append(f"[DIR]  {item}/")
                 else:
                     items.append(f"[FILE] {item}")
-            
+
             if not items:
                 return f"Empty directory: {path}"
-            
+
             return f"Contents of {path}:\n" + "\n".join(items)
         except Exception as e:
             return f"Error listing files: {str(e)}"
-    
+
     def _edit_file(self, path: str, old_text: str, new_text: str) -> str:
         try:
             if os.path.exists(path) and old_text:
                 with open(path, 'r', encoding='utf-8') as f:
                     content = f.read()
-                
+
                 if old_text not in content:
                     return f"Text not found in file: {old_text}"
-                
+
                 content = content.replace(old_text, new_text)
-                
+
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(content)
-                
+
                 return f"Successfully edited {path}"
             else:
                 os.makedirs(os.path.dirname(path), exist_ok=True)
-                
+
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)
-                
+
                 return f"Successfully created {path}"
         except Exception as e:
             return f"Error editing file: {str(e)}"
-    
+
     def chat(self, user_input: str) -> str:
         self.messages.append({"role": "user", "content": user_input})
-        
+
         tool_schemas = [
             {
                 "name": tool.name,
@@ -164,7 +164,7 @@ class AIAgent:
             }
             for tool in self.tools
         ]
-        
+
         while True:
             try:
                 response = self.client.messages.create(
@@ -174,9 +174,9 @@ class AIAgent:
                     messages=self.messages,
                     tools=tool_schemas
                 )
-                
+
                 assistant_message = {"role": "assistant", "content": []}
-                
+
                 for content in response.content:
                     if content.type == "text":
                         assistant_message["content"].append({
@@ -190,9 +190,9 @@ class AIAgent:
                             "name": content.name,
                             "input": content.input
                         })
-                
+
                 self.messages.append(assistant_message)
-                
+
                 tool_results = []
                 for content in response.content:
                     if content.type == "tool_use":
@@ -202,12 +202,12 @@ class AIAgent:
                             "tool_use_id": content.id,
                             "content": result
                         })
-                
+
                 if tool_results:
                     self.messages.append({"role": "user", "content": tool_results})
                 else:
                     return response.content[0].text if response.content else ""
-                    
+
             except Exception as e:
                 return f"Error: {str(e)}"
 
@@ -216,36 +216,36 @@ def main():
     parser = argparse.ArgumentParser(description="AI Code Assistant - A conversational AI agent with file editing capabilities")
     parser.add_argument("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")
     args = parser.parse_args()
-    
+
     api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         print("Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable")
         sys.exit(1)
-    
+
     agent = AIAgent(api_key)
-    
+
     print("AI Code Assistant")
     print("================")
     print("A conversational AI agent that can read, list, and edit files.")
     print("Type 'exit' or 'quit' to end the conversation.")
     print()
-    
+
     while True:
         try:
             user_input = input("You: ").strip()
-            
+
             if user_input.lower() in ["exit", "quit"]:
                 print("Goodbye!")
                 break
-            
+
             if not user_input:
                 continue
-            
+
             print("\nAssistant: ", end="", flush=True)
             response = agent.chat(user_input)
             print(response)
             print()
-            
+
         except KeyboardInterrupt:
             print("\n\nGoodbye!")
             break

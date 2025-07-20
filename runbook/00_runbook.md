@@ -1284,10 +1284,9 @@ You've built a complete AI agent that can:
 - Create and edit files
 - Respond with personality
 
-Total lines of code: ~260 (excluding blank lines and comments)
+Total lines of code: 218 (excluding blank lines and comments)
 
-Try asking it to:
+## Additional Challenges
 
-- "Create a FizzBuzz program in JavaScript"
-- "What's in the current directory?"
-- "Edit the FizzBuzz to go up to 50 instead of 100"
+- Add a fetch tool to download contents from a URL
+- Add a web search tool to search the web
