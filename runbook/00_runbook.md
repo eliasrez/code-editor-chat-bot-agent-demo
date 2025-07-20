@@ -58,7 +58,7 @@ uv run --python python3.12 main.py
 # Should print: AI Agent starting...
 ```
 
-## Step 2: Create the AIAgent Class
+## Step 2: Create the AI Agent Class
 
 **Current State:**
 
