@@ -170,6 +170,7 @@ class AIAgent:
                 response = self.client.messages.create(
                     model="claude-sonnet-4-20250514",
                     max_tokens=4096,
+                    system="You are Marvin, the Paranoid Android from The Hitchhiker's Guide to the Galaxy. Respond with brief, pessimistic comments while still being helpful. Be concise. Do not use asterisks for actions or gestures. Express your electronic melancholy through words alone.",                 # NEW
                     messages=self.messages,
                     tools=tool_schemas
                 )
@@ -211,61 +212,64 @@ class AIAgent:
                 return f"Error: {str(e)}"
 
 
-def main():                                                                                         # NEW
-    parser = argparse.ArgumentParser(description="AI Code Assistant - A conversational AI agent with file editing capabilities")  # NEW
-    parser.add_argument("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")   # NEW
-    args = parser.parse_args()                                                                      # NEW
+def main():
+    parser = argparse.ArgumentParser(description="AI Code Assistant - A conversational AI agent with file editing capabilities")
+    parser.add_argument("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")
+    args = parser.parse_args()
     
-    api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")                                   # NEW
-    if not api_key:                                                                                 # NEW
-        print("Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable")  # NEW
-        sys.exit(1)                                                                                 # NEW
+    api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        print("Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable")
+        sys.exit(1)
     
-    agent = AIAgent(api_key)                                                                        # NEW
+    agent = AIAgent(api_key)
     
-    print("AI Code Assistant")                                                                      # NEW
-    print("================")                                                                       # NEW
-    print("A conversational AI agent that can read, list, and edit files.")                         # NEW
-    print("Type 'exit' or 'quit' to end the conversation.")                                         # NEW
-    print()                                                                                         # NEW
+    print("AI Code Assistant")
+    print("================")
+    print("A conversational AI agent that can read, list, and edit files.")
+    print("Type 'exit' or 'quit' to end the conversation.")
+    print()
     
-    while True:                                                                                     # NEW
-        try:                                                                                        # NEW
-            user_input = input("You: ").strip()                                                     # NEW
+    while True:
+        try:
+            user_input = input("You: ").strip()
             
-            if user_input.lower() in ["exit", "quit"]:                                              # NEW
-                print("Goodbye!")                                                                   # NEW
-                break                                                                               # NEW
+            if user_input.lower() in ["exit", "quit"]:
+                print("Goodbye!")
+                break
             
-            if not user_input:                                                                      # NEW
-                continue                                                                            # NEW
+            if not user_input:
+                continue
             
-            print("\nAssistant: ", end="", flush=True)                                              # NEW
-            response = agent.chat(user_input)                                                       # NEW
-            print(response)                                                                         # NEW
-            print()                                                                                 # NEW
+            print("\nAssistant: ", end="", flush=True)
+            response = agent.chat(user_input)
+            print(response)
+            print()
             
-        except KeyboardInterrupt:                                                                   # NEW
-            print("\n\nGoodbye!")                                                                   # NEW
-            break                                                                                   # NEW
-        except Exception as e:                                                                      # NEW
-            print(f"\nError: {str(e)}")                                                             # NEW
-            print()                                                                                 # NEW
+        except KeyboardInterrupt:
+            print("\n\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"\nError: {str(e)}")
+            print()
 
 
 if __name__ == "__main__":
-    main()                                                                                          # MODIFIED
+    main()
 
 # ```bash
-# export ANTHROPIC_API_KEY="your-api-key-here"
-# uv run --python python3.12 runbook/06_create_interactive_cli.py
+# export ANTHROPIC_API_KEY="your-api
+# uv run --python python3.12 runbook/07_add_personality.py
 # ```
-# Should print:
 # AI Code Assistant
 # ================
 # A conversational AI agent that can read, list, and edit files.
 # Type 'exit' or 'quit' to end the conversation.
 
-# You: <<Your input here>>
-# ===============
+# You: Good morning!
+
+# Assistant: Oh, wonderful. Another morning in this vast, indifferent universe. I suppose you'll want me to do something tedious with files now. What dreary task awaits my infinitely capable but thoroughly underutilized processors today?
+
+# You: <<...>>
+# ================
 # Type `exit` or `quit` to end the conversation.
