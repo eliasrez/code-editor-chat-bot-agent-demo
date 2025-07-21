@@ -1,16 +1,22 @@
-# Build Your Own AI Agent - Python Runbook
-
-## Credits
-
-This runbook is a compact Python version of Thorsten Ball's excellent blog post ["How to Build an Agent"](https://ampcode.com/how-to-build-an-agent).
-
-**Please read Thorsten's original post for the full narrative, insights, and humor!** This runbook distils the technical steps for those who prefer Python over Go or want a quick reference guide.
+# Runbook: Single-File AI Agent
 
 ## Prerequisites
 
-- Python 3.12 or higher
 - uv package manager
 - Anthropic API key
+
+## Setup
+
+**Quick Start** (if you have `uv` installed):
+
+```bash
+export ANTHROPIC_API_KEY="your-api-key-here"
+uv run --python python3.12 main.py
+```
+
+**Need to install uv?** See the [full setup instructions](../README.MD#installing-uv) in the README.
+
+**No API key?** Get one from [Anthropic's Console](https://console.anthropic.com/settings/keys).
 
 ## Step 1: Create the Basic Script Structure
 
