@@ -11,7 +11,7 @@ import os
 import sys
 import argparse
 from typing import List, Dict, Any
-from anthropic import Anthropic
+from anthropic import Anthropic # type: ignore
 from pydantic import BaseModel
 
 

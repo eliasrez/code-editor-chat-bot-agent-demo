@@ -11,7 +11,6 @@
 
 ```bash
 export ANTHROPIC_API_KEY="your-api-key-here"
-uv run --python python3.12 main.py
 ```
 
 **Need to install uv?** See the [full setup instructions](../README.MD#installing-uv) in the README.
@@ -38,7 +37,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -84,7 +83,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -92,9 +91,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging                                      # NEW
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging                                      # NEW
+logging.basicConfig(                                  # NEW
+    level=logging.INFO,                               # NEW
+    format='%(asctime)s - %(message)s',               # NEW
+    handlers=[                                        # NEW
+        logging.FileHandler('agent.log')              # NEW
+    ]                                                 # NEW
+)                                                     # NEW
+                                                      # NEW
+# Suppress verbose HTTP logs                          # NEW
+logging.getLogger('httpcore').setLevel(logging.WARNING)  # NEW
+logging.getLogger('httpx').setLevel(logging.WARNING)     # NEW
 
 
 class Tool(BaseModel):                                # NEW
@@ -150,7 +163,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -158,9 +171,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -268,7 +295,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -276,9 +303,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -417,7 +458,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"                               # NEW
             else:                                                                  # NEW
-                os.makedirs(os.path.dirname(path), exist_ok=True)                  # NEW
+                # Only create directory if path contains subdirectories            # NEW
+                dir_name = os.path.dirname(path)                                   # NEW
+                if dir_name:                                                       # NEW
+                    os.makedirs(dir_name, exist_ok=True)                           # NEW
                 
                 with open(path, 'w', encoding='utf-8') as f:                       # NEW
                     f.write(new_text)                                              # NEW
@@ -467,7 +511,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -475,9 +519,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -611,7 +669,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"
             else:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Only create directory if path contains subdirectories
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
                 
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)
@@ -716,7 +777,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -724,9 +785,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -859,7 +934,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"
             else:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Only create directory if path contains subdirectories
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
                 
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)
@@ -1010,7 +1088,7 @@ uv run --python python3.12 main.py
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -1018,9 +1096,23 @@ uv run --python python3.12 main.py
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -1153,7 +1245,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"
             else:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Only create directory if path contains subdirectories
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
                 
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)

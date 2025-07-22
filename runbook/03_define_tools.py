@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -9,9 +9,23 @@
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):

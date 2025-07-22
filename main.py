@@ -9,9 +9,23 @@
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic #type: ignore
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,  # Changed from DEBUG to INFO
+    format='%(asctime)s - %(message)s',  # Simplified format
+    handlers=[
+        logging.FileHandler('agent.log')  # Only log to file, not console
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -82,6 +96,7 @@ class AIAgent:
         ]
     
     def _execute_tool(self, tool_name: str, tool_input: Dict[str, Any]) -> str:
+        logging.info(f"Executing tool: {tool_name} with input: {tool_input}")
         try:
             if tool_name == "read_file":
                 return self._read_file(tool_input["path"])
@@ -96,6 +111,7 @@ class AIAgent:
             else:
                 return f"Unknown tool: {tool_name}"
         except Exception as e:
+            logging.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error executing {tool_name}: {str(e)}"
     
     def _read_file(self, path: str) -> str:
@@ -144,7 +160,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"
             else:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Only create directory if path contains subdirectories
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
                 
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)
@@ -154,6 +173,7 @@ class AIAgent:
             return f"Error editing file: {str(e)}"
     
     def chat(self, user_input: str) -> str:
+        logging.info(f"User input: {user_input}")
         self.messages.append({"role": "user", "content": user_input})
         
         tool_schemas = [
@@ -197,6 +217,7 @@ class AIAgent:
                 for content in response.content:
                     if content.type == "tool_use":
                         result = self._execute_tool(content.name, content.input)
+                        logging.info(f"Tool result: {result[:500]}...")  # Log first 500 chars
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": content.id,

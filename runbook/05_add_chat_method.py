@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic",
+#     "anthropic", # type: ignore
 #     "pydantic",
 # ]
 # ///
@@ -9,9 +9,23 @@
 import os
 import sys
 import argparse
+import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic
 from pydantic import BaseModel
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    handlers=[
+        logging.FileHandler('agent.log')
+    ]
+)
+
+# Suppress verbose HTTP logs
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
@@ -145,7 +159,10 @@ class AIAgent:
                 
                 return f"Successfully edited {path}"
             else:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
+                # Only create directory if path contains subdirectories
+                dir_name = os.path.dirname(path)
+                if dir_name:
+                    os.makedirs(dir_name, exist_ok=True)
                 
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(new_text)
@@ -221,6 +238,7 @@ if __name__ == "__main__":
     # Test chat                                                         # NEW
     response = agent.chat("What files are in the current directory?")   # NEW
     print(response)                                                     # NEW
+
 
 # ```bash
 # export ANTHROPIC_API_KEY="your-api
