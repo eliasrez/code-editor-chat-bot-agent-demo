@@ -20,6 +20,7 @@ This code is based on the tutorial by Thorsten Ball in ["How to Build an Agent"]
   - Edit existing files or create new ones.
 - Interactive chat interface.
 - Error handling and feedback.
+- Logging of agent tool usage.
 
 ## Requirements
 
