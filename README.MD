@@ -65,7 +65,7 @@ export ANTHROPIC_API_KEY="your-api-key-here"
 2. Run the agent:
 
 ```bash
-uv run --python python3.12 main.py
+uv run main.py
 ```
 
 The agent leverages uv's inline dependencies handling from the script headers, so no manual dependency installation is needed.

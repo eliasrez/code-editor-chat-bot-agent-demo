@@ -17,22 +17,20 @@ from pydantic import BaseModel
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(message)s',
-    handlers=[
-        logging.FileHandler('agent.log')
-    ]
+    format="%(asctime)s - %(message)s",
+    handlers=[logging.FileHandler("agent.log")],
 )
 
 # Suppress verbose HTTP logs
-logging.getLogger('httpcore').setLevel(logging.WARNING)
-logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
     name: str
     description: str
     input_schema: Dict[str, Any]
-    
+
 
 class AIAgent:
     def __init__(self, api_key: str):
@@ -40,7 +38,7 @@ class AIAgent:
         self.messages: List[Dict[str, Any]] = []
         self.tools: List[Tool] = []
         self._setup_tools()
-    
+
     def _setup_tools(self):
         self.tools = [
             Tool(
@@ -51,11 +49,11 @@ class AIAgent:
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "The path to the file to read"
+                            "description": "The path to the file to read",
                         }
                     },
-                    "required": ["path"]
-                }
+                    "required": ["path"],
+                },
             ),
             Tool(
                 name="list_files",
@@ -65,11 +63,11 @@ class AIAgent:
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "The directory path to list (defaults to current directory)"
+                            "description": "The directory path to list (defaults to current directory)",
                         }
                     },
-                    "required": []
-                }
+                    "required": [],
+                },
             ),
             Tool(
                 name="edit_file",
@@ -79,22 +77,22 @@ class AIAgent:
                     "properties": {
                         "path": {
                             "type": "string",
-                            "description": "The path to the file to edit"
+                            "description": "The path to the file to edit",
                         },
                         "old_text": {
                             "type": "string",
-                            "description": "The text to search for and replace (leave empty to create new file)"
+                            "description": "The text to search for and replace (leave empty to create new file)",
                         },
                         "new_text": {
                             "type": "string",
-                            "description": "The text to replace old_text with"
-                        }
+                            "description": "The text to replace old_text with",
+                        },
                     },
-                    "required": ["path", "new_text"]
-                }
-            )
+                    "required": ["path", "new_text"],
+                },
+            ),
         ]
-    
+
     def _execute_tool(self, tool_name: str, tool_input: Dict[str, Any]) -> str:
         try:
             if tool_name == "read_file":
@@ -105,28 +103,28 @@ class AIAgent:
                 return self._edit_file(
                     tool_input["path"],
                     tool_input.get("old_text", ""),
-                    tool_input["new_text"]
+                    tool_input["new_text"],
                 )
             else:
                 return f"Unknown tool: {tool_name}"
         except Exception as e:
             return f"Error executing {tool_name}: {str(e)}"
-    
+
     def _read_file(self, path: str) -> str:
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
             return f"File contents of {path}:\n{content}"
         except FileNotFoundError:
             return f"File not found: {path}"
         except Exception as e:
             return f"Error reading file: {str(e)}"
-    
+
     def _list_files(self, path: str) -> str:
         try:
             if not os.path.exists(path):
                 return f"Path not found: {path}"
-            
+
             items = []
             for item in sorted(os.listdir(path)):
                 item_path = os.path.join(path, item)
@@ -134,149 +132,158 @@ class AIAgent:
                     items.append(f"[DIR]  {item}/")
                 else:
                     items.append(f"[FILE] {item}")
-            
+
             if not items:
                 return f"Empty directory: {path}"
-            
+
             return f"Contents of {path}:\n" + "\n".join(items)
         except Exception as e:
             return f"Error listing files: {str(e)}"
-    
+
     def _edit_file(self, path: str, old_text: str, new_text: str) -> str:
         try:
             if os.path.exists(path) and old_text:
-                with open(path, 'r', encoding='utf-8') as f:
+                with open(path, "r", encoding="utf-8") as f:
                     content = f.read()
-                
+
                 if old_text not in content:
                     return f"Text not found in file: {old_text}"
-                
+
                 content = content.replace(old_text, new_text)
-                
-                with open(path, 'w', encoding='utf-8') as f:
+
+                with open(path, "w", encoding="utf-8") as f:
                     f.write(content)
-                
+
                 return f"Successfully edited {path}"
             else:
                 # Only create directory if path contains subdirectories
                 dir_name = os.path.dirname(path)
                 if dir_name:
                     os.makedirs(dir_name, exist_ok=True)
-                
-                with open(path, 'w', encoding='utf-8') as f:
+
+                with open(path, "w", encoding="utf-8") as f:
                     f.write(new_text)
-                
+
                 return f"Successfully created {path}"
         except Exception as e:
             return f"Error editing file: {str(e)}"
-    
+
     def chat(self, user_input: str) -> str:
         self.messages.append({"role": "user", "content": user_input})
-        
+
         tool_schemas = [
             {
                 "name": tool.name,
                 "description": tool.description,
-                "input_schema": tool.input_schema
+                "input_schema": tool.input_schema,
             }
             for tool in self.tools
         ]
-        
+
         while True:
             try:
                 response = self.client.messages.create(
                     model="claude-sonnet-4-20250514",
                     max_tokens=4096,
                     messages=self.messages,
-                    tools=tool_schemas
+                    tools=tool_schemas,
                 )
-                
+
                 assistant_message = {"role": "assistant", "content": []}
-                
+
                 for content in response.content:
                     if content.type == "text":
-                        assistant_message["content"].append({
-                            "type": "text",
-                            "text": content.text
-                        })
+                        assistant_message["content"].append(
+                            {"type": "text", "text": content.text}
+                        )
                     elif content.type == "tool_use":
-                        assistant_message["content"].append({
-                            "type": "tool_use",
-                            "id": content.id,
-                            "name": content.name,
-                            "input": content.input
-                        })
-                
+                        assistant_message["content"].append(
+                            {
+                                "type": "tool_use",
+                                "id": content.id,
+                                "name": content.name,
+                                "input": content.input,
+                            }
+                        )
+
                 self.messages.append(assistant_message)
-                
+
                 tool_results = []
                 for content in response.content:
                     if content.type == "tool_use":
                         result = self._execute_tool(content.name, content.input)
-                        tool_results.append({
-                            "type": "tool_result",
-                            "tool_use_id": content.id,
-                            "content": result
-                        })
-                
+                        tool_results.append(
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": content.id,
+                                "content": result,
+                            }
+                        )
+
                 if tool_results:
                     self.messages.append({"role": "user", "content": tool_results})
                 else:
                     return response.content[0].text if response.content else ""
-                    
+
             except Exception as e:
                 return f"Error: {str(e)}"
 
 
-def main():                                                                                         # NEW
-    parser = argparse.ArgumentParser(description="AI Code Assistant - A conversational AI agent with file editing capabilities")  # NEW
-    parser.add_argument("--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)")   # NEW
-    args = parser.parse_args()                                                                      # NEW
-    
-    api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")                                   # NEW
-    if not api_key:                                                                                 # NEW
-        print("Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable")  # NEW
-        sys.exit(1)                                                                                 # NEW
-    
-    agent = AIAgent(api_key)                                                                        # NEW
-    
-    print("AI Code Assistant")                                                                      # NEW
-    print("================")                                                                       # NEW
-    print("A conversational AI agent that can read, list, and edit files.")                         # NEW
-    print("Type 'exit' or 'quit' to end the conversation.")                                         # NEW
-    print()                                                                                         # NEW
-    
-    while True:                                                                                     # NEW
-        try:                                                                                        # NEW
-            user_input = input("You: ").strip()                                                     # NEW
-            
-            if user_input.lower() in ["exit", "quit"]:                                              # NEW
-                print("Goodbye!")                                                                   # NEW
-                break                                                                               # NEW
-            
-            if not user_input:                                                                      # NEW
-                continue                                                                            # NEW
-            
-            print("\nAssistant: ", end="", flush=True)                                              # NEW
-            response = agent.chat(user_input)                                                       # NEW
-            print(response)                                                                         # NEW
-            print()                                                                                 # NEW
-            
-        except KeyboardInterrupt:                                                                   # NEW
-            print("\n\nGoodbye!")                                                                   # NEW
-            break                                                                                   # NEW
-        except Exception as e:                                                                      # NEW
-            print(f"\nError: {str(e)}")                                                             # NEW
-            print()                                                                                 # NEW
+def main():
+    parser = argparse.ArgumentParser(
+        description="AI Code Assistant - A conversational AI agent with file editing capabilities"
+    )
+    parser.add_argument(
+        "--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)"
+    )
+    args = parser.parse_args()
+
+    api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        print(
+            "Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable"
+        )
+        sys.exit(1)
+
+    agent = AIAgent(api_key)
+
+    print("AI Code Assistant")
+    print("=================")
+    print("A conversational AI agent that can read, list, and edit files.")
+    print("Type 'exit' or 'quit' to end the conversation.")
+    print()
+
+    while True:
+        try:
+            user_input = input("You: ").strip()
+
+            if user_input.lower() in ["exit", "quit"]:
+                print("Goodbye!")
+                break
+
+            if not user_input:
+                continue
+
+            print("\nAssistant: ", end="", flush=True)
+            response = agent.chat(user_input)
+            print(response)
+            print()
+
+        except KeyboardInterrupt:
+            print("\n\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"\nError: {str(e)}")
+            print()
 
 
 if __name__ == "__main__":
-    main()                                                                                          # MODIFIED
+    main()
 
 
 # ```bash
 # export ANTHROPIC_API_KEY="your-api-key-here"
-# uv run --python python3.12 runbook/06_create_interactive_cli.py
+# uv run runbook/06_create_interactive_cli.py
 # ```
 # Should print:
 # AI Code Assistant

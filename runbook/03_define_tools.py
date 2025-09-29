@@ -17,85 +17,82 @@ from pydantic import BaseModel
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(message)s',
-    handlers=[
-        logging.FileHandler('agent.log')
-    ]
+    format="%(asctime)s - %(message)s",
+    handlers=[logging.FileHandler("agent.log")],
 )
 
 # Suppress verbose HTTP logs
-logging.getLogger('httpcore').setLevel(logging.WARNING)
-logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 class Tool(BaseModel):
     name: str
     description: str
     input_schema: Dict[str, Any]
-    
+
 
 class AIAgent:
     def __init__(self, api_key: str):
         self.client = Anthropic(api_key=api_key)
         self.messages: List[Dict[str, Any]] = []
         self.tools: List[Tool] = []
-        self._setup_tools()                           # NEW
-        print(f"Agent initialized with {len(self.tools)} tools")  # MODIFIED
+        self._setup_tools()
+        print(f"Agent initialized with {len(self.tools)} tools")
 
-
-    def _setup_tools(self):                           # NEW
-        self.tools = [                                # NEW
-            Tool(                                     # NEW
-                name="read_file",                     # NEW
-                description="Read the contents of a file at the specified path",  # NEW
-                input_schema={                        # NEW
-                    "type": "object",                 # NEW
-                    "properties": {                   # NEW
-                        "path": {                     # NEW
-                            "type": "string",         # NEW
-                            "description": "The path to the file to read"  # NEW
-                        }                             # NEW
-                    },                                # NEW
-                    "required": ["path"]              # NEW
-                }                                     # NEW
-            ),                                        # NEW
-            Tool(                                     # NEW
-                name="list_files",                    # NEW
-                description="List all files and directories in the specified path",  # NEW
-                input_schema={                        # NEW
-                    "type": "object",                 # NEW
-                    "properties": {                   # NEW
-                        "path": {                     # NEW
-                            "type": "string",         # NEW
-                            "description": "The directory path to list (defaults to current directory)"  # NEW
-                        }                             # NEW
-                    },                                # NEW
-                    "required": []                    # NEW
-                }                                     # NEW
-            ),                                        # NEW
-            Tool(                                     # NEW
-                name="edit_file",                     # NEW
-                description="Edit a file by replacing old_text with new_text. Creates the file if it doesn't exist.",  # NEW
-                input_schema={                        # NEW
-                    "type": "object",                 # NEW
-                    "properties": {                   # NEW
-                        "path": {                     # NEW
-                            "type": "string",         # NEW
-                            "description": "The path to the file to edit"  # NEW
-                        },                            # NEW
-                        "old_text": {                 # NEW
-                            "type": "string",         # NEW
-                            "description": "The text to search for and replace (leave empty to create new file)"  # NEW
-                        },                            # NEW
-                        "new_text": {                 # NEW
-                            "type": "string",         # NEW
-                            "description": "The text to replace old_text with"  # NEW
-                        }                             # NEW
-                    },                                # NEW
-                    "required": ["path", "new_text"]  # NEW
-                }                                     # NEW
-            )                                         # NEW
-        ]                                             # NEW
+    def _setup_tools(self):
+        self.tools = [
+            Tool(
+                name="read_file",
+                description="Read the contents of a file at the specified path",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The path to the file to read",
+                        }
+                    },
+                    "required": ["path"],
+                },
+            ),
+            Tool(
+                name="list_files",
+                description="List all files and directories in the specified path",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The directory path to list (defaults to current directory)",
+                        }
+                    },
+                    "required": [],
+                },
+            ),
+            Tool(
+                name="edit_file",
+                description="Edit a file by replacing old_text with new_text. Creates the file if it doesn't exist.",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The path to the file to edit",
+                        },
+                        "old_text": {
+                            "type": "string",
+                            "description": "The text to search for and replace (leave empty to create new file)",
+                        },
+                        "new_text": {
+                            "type": "string",
+                            "description": "The text to replace old_text with",
+                        },
+                    },
+                    "required": ["path", "new_text"],
+                },
+            ),
+        ]
 
 
 if __name__ == "__main__":
@@ -108,6 +105,6 @@ if __name__ == "__main__":
 
 # ```bash
 # export ANTHROPIC_API_KEY="your-api
-# uv run --python python3.12 runbook/03_define_tools.py
+# uv run runbook/03_define_tools.py
 # ```
 # Should print: Agent initialized with 3 tools
