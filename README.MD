@@ -8,7 +8,7 @@ You'll understand how AI agents parse responses, execute tools, and maintain con
 
 ## Credits
 
-This repository is forked from Francis Beeson's implementation: https://github.com/leobeeson/single-file-ai-agent-tutorial
+This repository is forked from Francis Beeson's implementation: [Single-File AI Agent Tutorial](https://github.com/leobeeson/single-file-ai-agent-tutorial)
 
 The code is based on the tutorial by Thorsten Ball in ["How to Build an Agent"](https://ampcode.com/how-to-build-an-agent) from ampcode.com. Thank you, Thorsten. Brilliant guide.
 
