@@ -12,7 +12,7 @@ import argparse
 import logging
 from typing import List, Dict, Any
 from anthropic import Anthropic  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel  # type: ignore
 
 # Set up logging
 logging.basicConfig(
