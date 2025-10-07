@@ -1,29 +1,40 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './FileExplorer.css'
 
 function FileExplorer({ onFileSelect }) {
   const [items, setItems] = useState([])
   const [currentPath, setCurrentPath] = useState('.')
   const [expandedFolders, setExpandedFolders] = useState(new Set(['.']))
+  const [refreshKey, setRefreshKey] = useState(0) 
 
-  const loadDirectory = async (path) => {
+ const loadDirectory = useCallback(async (path) => {
     try {
       const response = await fetch('/api/files/list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path })
       })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
       return data.items
     } catch (error) {
       console.error('Error loading directory:', error)
       return []
     }
+  }, []) // Empty dependency array means the function reference is stable
+  
+  const refreshExplorer = () => {
+    // Toggling this key forces the useEffect hook to run again
+    setRefreshKey(prevKey => prevKey + 1)
   }
 
   useEffect(() => {
     loadDirectory(currentPath).then(setItems)
-  }, [currentPath])
+  }, [currentPath, loadDirectory, refreshKey])
 
   const handleItemClick = async (item) => {
     if (item.type === 'directory') {
@@ -67,6 +78,9 @@ function FileExplorer({ onFileSelect }) {
       <div className="explorer-header">
         <h3>Explorer</h3>
       </div>
+      <button onClick={refreshExplorer} className="refresh-btn">
+          Refresh
+      </button>
       <div className="file-tree">
         {items?.length === 0 ? (
           <div className="empty">No files found</div>
