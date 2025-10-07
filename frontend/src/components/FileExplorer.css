@@ -1,0 +1,64 @@
+.file-explorer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.explorer-header {
+  padding: 15px 15px;
+  border-bottom: 1px solid #3e3e42;
+  background-color: #2d2d30;
+}
+
+.explorer-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #cccccc;
+}
+
+.file-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px 0;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  user-select: none;
+}
+
+.file-item:hover {
+  background-color: #2a2d2e;
+}
+
+.file-item.directory {
+  font-weight: 500;
+}
+
+.file-item .icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.file-item .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #cccccc;
+}
+
+.empty {
+  padding: 20px;
+  text-align: center;
+  color: #858585;
+  font-size: 14px;
+}

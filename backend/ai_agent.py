@@ -1,18 +1,16 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "anthropic", # type: ignore
+#     "anthropic",
 #     "pydantic",
 # ]
 # ///
 
 import os
-import sys
-import argparse  # NEW
 import logging
 from typing import List, Dict, Any
-from anthropic import Anthropic
-from pydantic import BaseModel
+from anthropic import Anthropic  # type: ignore
+from pydantic import BaseModel  # type: ignore
 
 # Set up logging
 logging.basicConfig(
@@ -33,6 +31,10 @@ class Tool(BaseModel):
 
 
 class AIAgent:
+    """
+    A conversational AI agent that uses the Anthropic API and provides
+    file editing capabilities via tools.
+    """
     def __init__(self, api_key: str):
         self.client = Anthropic(api_key=api_key)
         self.messages: List[Dict[str, Any]] = []
@@ -40,6 +42,7 @@ class AIAgent:
         self._setup_tools()
 
     def _setup_tools(self):
+        """Defines the tools available to the AI agent."""
         self.tools = [
             Tool(
                 name="read_file",
@@ -94,6 +97,8 @@ class AIAgent:
         ]
 
     def _execute_tool(self, tool_name: str, tool_input: Dict[str, Any]) -> str:
+        """Executes a defined tool and returns the result."""
+        logging.info(f"Executing tool: {tool_name} with input: {tool_input}")
         try:
             if tool_name == "read_file":
                 return self._read_file(tool_input["path"])
@@ -108,9 +113,11 @@ class AIAgent:
             else:
                 return f"Unknown tool: {tool_name}"
         except Exception as e:
+            logging.error(f"Error executing {tool_name}: {str(e)}")
             return f"Error executing {tool_name}: {str(e)}"
 
     def _read_file(self, path: str) -> str:
+        """Helper to read file content."""
         try:
             with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -121,6 +128,7 @@ class AIAgent:
             return f"Error reading file: {str(e)}"
 
     def _list_files(self, path: str) -> str:
+        """Helper to list directory contents."""
         try:
             if not os.path.exists(path):
                 return f"Path not found: {path}"
@@ -141,6 +149,7 @@ class AIAgent:
             return f"Error listing files: {str(e)}"
 
     def _edit_file(self, path: str, old_text: str, new_text: str) -> str:
+        """Helper to edit or create a file."""
         try:
             if os.path.exists(path) and old_text:
                 with open(path, "r", encoding="utf-8") as f:
@@ -169,6 +178,8 @@ class AIAgent:
             return f"Error editing file: {str(e)}"
 
     def chat(self, user_input: str) -> str:
+        """Sends a message to the Claude model, handling tool use."""
+        logging.info(f"User input: {user_input}")
         self.messages.append({"role": "user", "content": user_input})
 
         tool_schemas = [
@@ -182,15 +193,19 @@ class AIAgent:
 
         while True:
             try:
+                # API Call to Claude
                 response = self.client.messages.create(
                     model="claude-sonnet-4-5-20250929",
                     max_tokens=4096,
+                    system="You are a helpful coding assistant operating in a terminal environment. Output only plain text without markdown formatting, as your responses appear directly in the terminal. Be concise but thorough, providing clear and practical advice with a friendly tone. Don't use any asterisk characters in your responses.",
                     messages=self.messages,
                     tools=tool_schemas,
                 )
 
                 assistant_message = {"role": "assistant", "content": []}
-
+                tool_results = []
+                
+                # Process response and collect tool calls
                 for content in response.content:
                     if content.type == "text":
                         assistant_message["content"].append(
@@ -205,13 +220,15 @@ class AIAgent:
                                 "input": content.input,
                             }
                         )
-
-                self.messages.append(assistant_message)
-
-                tool_results = []
-                for content in response.content:
-                    if content.type == "tool_use":
+                        print(f"using tool:", content.name, content.input) # Log to stdout for CLI visibility
+                        
+                        # Execute tool
                         result = self._execute_tool(content.name, content.input)
+                        logging.info(
+                            f"Tool result: {result[:500]}..."
+                        )  # Log first 500 chars
+                        
+                        # Prepare tool result for next API call
                         tool_results.append(
                             {
                                 "type": "tool_result",
@@ -220,77 +237,14 @@ class AIAgent:
                             }
                         )
 
+                self.messages.append(assistant_message)
+
                 if tool_results:
+                    # If tools were used, append results and loop for another Claude call
                     self.messages.append({"role": "user", "content": tool_results})
                 else:
+                    # If no tools were used, return the text response
                     return response.content[0].text if response.content else ""
 
             except Exception as e:
                 return f"Error: {str(e)}"
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="AI Code Assistant - A conversational AI agent with file editing capabilities"
-    )
-    parser.add_argument(
-        "--api-key", help="Anthropic API key (or set ANTHROPIC_API_KEY env var)"
-    )
-    args = parser.parse_args()
-
-    api_key = args.api_key or os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print(
-            "Error: Please provide an API key via --api-key or ANTHROPIC_API_KEY environment variable"
-        )
-        sys.exit(1)
-
-    agent = AIAgent(api_key)
-
-    print("AI Code Assistant")
-    print("=================")
-    print("A conversational AI agent that can read, list, and edit files.")
-    print("Type 'exit' or 'quit' to end the conversation.")
-    print()
-
-    while True:
-        try:
-            user_input = input("You: ").strip()
-
-            if user_input.lower() in ["exit", "quit"]:
-                print("Goodbye!")
-                break
-
-            if not user_input:
-                continue
-
-            print("\nAssistant: ", end="", flush=True)
-            response = agent.chat(user_input)
-            print(response)
-            print()
-
-        except KeyboardInterrupt:
-            print("\n\nGoodbye!")
-            break
-        except Exception as e:
-            print(f"\nError: {str(e)}")
-            print()
-
-
-if __name__ == "__main__":
-    main()
-
-
-# ```bash
-# export ANTHROPIC_API_KEY="your-api-key-here"
-# uv run runbook/06_create_interactive_cli.py
-# ```
-# Should print:
-# AI Code Assistant
-# ================
-# A conversational AI agent that can read, list, and edit files.
-# Type 'exit' or 'quit' to end the conversation.
-
-# You: <<Your input here>>
-# ===============
-# Type `exit` or `quit` to end the conversation.

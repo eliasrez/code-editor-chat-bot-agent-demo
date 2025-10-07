@@ -1,4 +1,5 @@
 # Single-File AI Agent Tutorial
+### Useful: https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools
 
 Build a complete AI agent in 218 lines of Python. No frameworks, no complexity. Just clean code that shows exactly how agents work.
 
