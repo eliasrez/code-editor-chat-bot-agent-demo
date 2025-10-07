@@ -59,6 +59,20 @@ class AIAgent:
                 },
             ),
             Tool(
+                name="delete_file",
+                description="Delete the file at the specified path",
+                input_schema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The path to the file to delete",
+                        }
+                    },
+                    "required": ["path"],
+                },
+            ),
+            Tool(
                 name="list_files",
                 description="List all files and directories in the specified path",
                 input_schema={
@@ -102,6 +116,8 @@ class AIAgent:
         try:
             if tool_name == "read_file":
                 return self._read_file(tool_input["path"])
+            elif tool_name == "delete_file":
+                return self._delete_file(tool_input["path"])
             elif tool_name == "list_files":
                 return self._list_files(tool_input.get("path", "."))
             elif tool_name == "edit_file":
@@ -126,6 +142,18 @@ class AIAgent:
             return f"File not found: {path}"
         except Exception as e:
             return f"Error reading file: {str(e)}"
+        
+    def _delete_file(self, path: str) -> str:
+        """Helper to delete a file."""
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+                return f"Successfully deleted {path}"
+            else:
+                return f"File not found: {path}"
+        except Exception as e:
+            return f"Error deleting file: {str(e)}"
+        
 
     def _list_files(self, path: str) -> str:
         """Helper to list directory contents."""
