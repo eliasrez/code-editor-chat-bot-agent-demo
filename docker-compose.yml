@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-code-assistant-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      # Mount the current directory for development (hot reload)
+      - ./backend/:/app
+      # Persistent logs
+      - ./logs:/app/logs
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    networks:
+      - ai-assistant-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: ai-code-assistant-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    restart: unless-stopped
+    networks:
+      - ai-assistant-network
+
+  # CLI Service (optional - for running the command-line interface)
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-code-assistant-cli
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+    command: python main.py
+    stdin_open: true
+    tty: true
+    networks:
+      - ai-assistant-network
+    profiles:
+      - cli
+
+networks:
+  ai-assistant-network:
+    driver: bridge

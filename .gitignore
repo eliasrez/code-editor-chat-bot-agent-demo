@@ -10,6 +10,10 @@ frontend/dist/
 frontend/.vite/
 frontend/package-lock.json
 
+backend/__pycache__/
+backend/.env
+backend/agent.log
+
 # Python cache
 __pycache__/
 *.py[cod]
